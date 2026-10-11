@@ -1,0 +1,22 @@
+{
+  "name": "tradewinds",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3210",
+    "build": "next build",
+    "start": "next start -p ${PORT:-3210}",
+    "start:tunnel": "next start -p 3211"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.1.0",
+    "@solana/web3.js": "^1.99.0",
+    "cobe": "^2.0.1",
+    "maplibre-gl": "^4.7.1",
+    "motion": "^14.1.0",
+    "next": "^16.4.0",
+    "pg": "^8.23.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

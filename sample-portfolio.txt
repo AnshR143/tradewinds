@@ -1,0 +1,8 @@
+# A made-up portfolio for testing TradeWinds. One holding per line: ticker, then shares.
+CCL 40
+HD 10
+NUE 15
+DAL 20
+XOM 12
+AAPL 5
+MSFT 3
