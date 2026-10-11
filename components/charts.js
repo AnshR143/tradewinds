@@ -1,9 +1,5 @@
 'use client';
 
-// Hand-drawn SVG and CSS charts. No libraries, no keys needed.
-// Everything here reads CSS variables, so it follows light and dark mode.
-
-// A month of daily closes, oldest first. Green when the month is up, red when down.
 export function Sparkline({ series, positive, width = 240, height = 60 }) {
   if (!series || series.length < 2) return null;
   const min = Math.min(...series);
@@ -33,7 +29,6 @@ export function Sparkline({ series, positive, width = 240, height = 60 }) {
   );
 }
 
-// Prediction-market odds as horizontal percentage bars.
 export function OddsBars({ outcomes }) {
   return (
     <div className="odds">
@@ -53,7 +48,6 @@ export function OddsBars({ outcomes }) {
   );
 }
 
-// Horizontal bars for the impact-map overview: one row per disruption.
 export function MapBars({ rows }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
   return (

@@ -1,4 +1,3 @@
-// Signs in to an existing account.
 import { NextResponse } from 'next/server';
 import { accountsAvailable, checkLogin, cleanEmail, clientKey, COOKIE, cookieOptions, sameOrigin, startSession, tooMany } from '@/lib/auth';
 
@@ -13,7 +12,6 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   const email = cleanEmail(body.email);
   const password = typeof body.password === 'string' ? body.password.slice(0, 200) : '';
-  // The same message for a wrong email and a wrong password, so it does not reveal which emails have accounts.
   const wrong = Response.json({ error: 'That email and password do not match.' }, { status: 401 });
   if (!email || !password) return wrong;
   if (tooMany(`login|${clientKey(request)}|${email}`, 8, 10 * MINUTE)) return Response.json({ error: 'Too many tries. Wait ten minutes and try again.' }, { status: 429 });

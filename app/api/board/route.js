@@ -1,4 +1,3 @@
-// Every stock that events happening right now are likely to move, strongest first.
 import { listEvents, signalBoard } from '@/lib/board';
 
 export const dynamic = 'force-dynamic';

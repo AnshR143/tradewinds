@@ -1,4 +1,3 @@
-// Patterns in plane and ship traffic right now, with the likely reason for each.
 import { getPatterns } from '@/lib/patterns';
 
 export const dynamic = 'force-dynamic';

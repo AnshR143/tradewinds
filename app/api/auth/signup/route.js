@@ -1,4 +1,3 @@
-// Creates an account and signs it in.
 import { NextResponse } from 'next/server';
 import { accountsAvailable, cleanEmail, clientKey, COOKIE, cookieOptions, createUser, passwordProblem, sameOrigin, startSession, tooMany } from '@/lib/auth';
 
@@ -15,8 +14,6 @@ export async function POST(request) {
   if (!email) return Response.json({ error: 'That does not look like an email address.' }, { status: 400 });
   const problem = passwordProblem(body.password);
   if (problem) return Response.json({ error: problem }, { status: 400 });
-  // Counted only once the form is valid, so typos do not use it up. A whole room can share
-  // one address at an event, so the limit is generous.
   if (tooMany(`signup|${clientKey(request)}`, 30, 60 * MINUTE)) return Response.json({ error: 'Too many new accounts from here. Try again in an hour.' }, { status: 429 });
 
   try {

@@ -1,4 +1,3 @@
-// Tells the page which parts are running on real keys. Only true/false is sent, never a key.
 import { hasAiKey } from '@/lib/ai';
 import { hasWallet } from '@/lib/solana';
 

@@ -1,5 +1,3 @@
-// Small pieces shared by the tabs.
-
 export const KIND = { storm: 'Storm', weather: 'Weather alert', wildfire: 'Wildfire', volcano: 'Volcano', commodity: 'Commodity price' };
 
 export function ago(time) {
@@ -15,7 +13,6 @@ export function Skeleton({ width = '100%', height = 14, style }) {
   return <div className="skeleton" style={{ width, height, ...style }} />;
 }
 
-// A placeholder shaped like a list of cards, shown while data loads.
 export function SkeletonRows({ count = 3 }) {
   return (
     <div aria-hidden="true">
@@ -30,7 +27,6 @@ export function SkeletonRows({ count = 3 }) {
   );
 }
 
-// The steps of a cause-and-effect chain, drawn as dots on a line.
 export function Chain({ steps, direction }) {
   return (
     <ol className={`timeline chain ${direction || ''}`}>

@@ -1,7 +1,5 @@
 'use client';
 
-// The answer to one question: the bottom line, then the stocks it is likely to move. The rest
-// (next steps, evidence, bonds) sits behind tabs that start closed.
 import { useState } from 'react';
 import { Tabs } from '@/components/bits';
 import { money } from '@/lib/moves';
@@ -26,7 +24,6 @@ function NewsItems({ items }) {
 }
 
 function Evidence({ result }) {
-  // null = not searched yet, 'searching', or { items, searched }
   const [more, setMore] = useState(null);
 
   async function findMore() {
@@ -90,8 +87,6 @@ function Evidence({ result }) {
   );
 }
 
-// How this event touches the holdings the reader uploaded. Read from the impact map, not
-// written by the AI.
 const READS = {
   up: { label: 'Likely up', tag: 'tailwind' },
   down: { label: 'Likely down', tag: 'headwind' },
@@ -103,7 +98,6 @@ function Portfolio({ holdings, portfolio }) {
   const shares = new Map(portfolio.map((h) => [h.ticker, h.shares]));
   const up = holdings.exposed.filter((h) => h.direction === 'tailwind');
   const down = holdings.exposed.filter((h) => h.direction === 'headwind');
-  // Dollars the reader holds on each side, counting only holdings with a share count and a price.
   const held = (list) => list.reduce((sum, h) => sum + (h.price?.status === 'ok' ? (shares.get(h.ticker) || 0) * h.price.price : 0), 0);
 
   return (
@@ -181,9 +175,7 @@ function Beyond({ result }) {
 
 export default function Answer({ result, portfolio = [], onAnswer, onSpeak, speaking }) {
   const touched = result.holdings?.exposed.length || 0;
-  // Holdings off the map that the AI still had something to say about.
   const reads = (result.holdings?.reads || []).filter((r) => r.effect !== 'none').length;
-  // The tabs start closed, so the answer stays short. Clicking the open tab closes it.
   const [tab, setTab] = useState(touched || reads ? 'portfolio' : null);
 
   if (result.needsClarification) {

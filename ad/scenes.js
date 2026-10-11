@@ -1,19 +1,13 @@
-// Every scene is driven by seek(t): the page shows exactly what second t looks like, so a
-// renderer can step through it frame by frame. The scene is picked by the address, e.g.
-// index.html#ask or index.html#ov-label:sat:5.
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const NS = 'http://www.w3.org/2000/svg';
 const [name, arg, arg2] = location.hash.slice(1).split(':');
 const tl = gsap.timeline({ paused: true });
-// Work done on every frame, on top of the timeline.
 const ticks = [];
-// The "camera" of the current scene, and how blurred it is.
 let rig = null;
 const fx = { blur: 0 };
 
-// A fixed "random" number generator, so every render comes out the same.
 function seeded(seed) {
   let s = seed;
   return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
@@ -28,8 +22,6 @@ function common(id) {
   });
 }
 
-// A scene arrives by flying toward the camera and leaves by flying through it, so a plain
-// cut between two scenes reads as one continuous move.
 function enter(id, at = 0, flyRig = true, superAt = at) {
   if (flyRig) tl.fromTo(rig, { scale: 0.72, opacity: 0, rotationX: 12, y: 70, transformPerspective: 2400 }, { scale: 1, opacity: 1, rotationX: 0, y: 0, duration: 0.6, ease: 'expo.out' }, at);
   tl.fromTo(fx, { blur: 18 }, { blur: 0, duration: 0.45, ease: 'power2.out' }, at)
@@ -37,7 +29,6 @@ function enter(id, at = 0, flyRig = true, superAt = at) {
     .from(`#${id} .super .tagk`, { opacity: 0, x: -26, duration: 0.45, ease: 'power3.out' }, superAt + 0.05)
     .from(`#${id} .super .w`, { opacity: 0, y: 40, duration: 0.55, stagger: 0.06, ease: 'power3.out' }, superAt + 0.12);
 }
-// The headline steps aside while the camera is pushed in, so it never sits on top of the window.
 function hideSuper(id, from, to) {
   tl.to(`#${id} .super`, { opacity: 0, y: -16, duration: 0.3, ease: 'power2.in' }, from);
   if (to) tl.to(`#${id} .super`, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, to);
@@ -49,7 +40,6 @@ function leave(id, at) {
     .to(`#${id} .glow`, { opacity: 0, duration: 0.3 }, at);
 }
 
-// A number that counts up to its value.
 function count(el, at, dur = 0.9) {
   const to = Number(el.dataset.n);
   const from = Number(el.dataset.from || 0);
@@ -63,13 +53,11 @@ function count(el, at, dur = 0.9) {
   });
 }
 
-// A band of light that crosses a card once.
 function sweep(el, at, width) {
   gsap.set(el, { skewX: -18 });
   tl.fromTo(el, { x: -320, opacity: 0 }, { x: width + 320, opacity: 1, duration: 0.9, ease: 'power2.inOut', immediateRender: true }, at);
 }
 
-// ---- The map used in two scenes ----------------------------------------------------------------
 const PANEL = `
   <div class="mpanel">
     <div class="ph">What is connected right now</div>
@@ -94,7 +82,6 @@ const PANEL_CSS = `
   .pi.on { background: var(--up-bg); margin: 6px -14px 0; padding: 11px 14px; border-radius: 14px; border-bottom-color: transparent; }
   .maparea { position: absolute; left: 470px; top: 0; width: 1090px; height: 760px; overflow: hidden; }`;
 
-// Builds the panel and the map inside a window. Returns handles to everything that moves.
 async function buildMap(win) {
   const W = 1090, H = 760;
   document.head.insertAdjacentHTML('beforeend', `<style>${PANEL_CSS}</style>`);
@@ -170,7 +157,6 @@ async function buildMap(win) {
     return { el, x: 40 + random() * (W - 80), y: 40 + random() * (H - 220), heading: random() * 360, speed: 16 + random() * 16 };
   });
 
-  // What keeps moving on its own: the dashes, the storm's rings and the planes.
   const tick = (t, ringsFrom = 0.4) => {
     items.forEach((it) => { it.flow.style.strokeDashoffset = -t * 44; });
     rings.forEach((r, i) => {
@@ -187,10 +173,7 @@ async function buildMap(win) {
   return { W, H, move, storm, stormTag, stormDot, items, planeBox, tick };
 }
 
-// ---- Hands, drawn the way the app's camera view draws them ---------------------------------------
-// 21 points of an open right hand, palm centre at 0,0, in pixels.
 const OPEN = [[0, 74], [-40, 50], [-66, 22], [-84, -6], [-98, -32], [-32, -8], [-38, -52], [-41, -80], [-43, -104], [-8, -14], [-8, -62], [-8, -94], [-8, -120], [16, -10], [20, -54], [22, -84], [23, -106], [38, 2], [46, -32], [50, -56], [52, -76]];
-// The same hand with thumb and index tips together.
 const PINCH = OPEN.map((p, i) => ({ 3: [-70, -14], 4: [-56, -42], 7: [-50, -70], 8: [-54, -46] }[i] || p));
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
 function makeHand(svg, flip) {
@@ -208,7 +191,6 @@ function makeHand(svg, flip) {
 }
 
 const SCENES = {
-  // The opening: a dotted globe turning, with trade routes drawing between real cities.
   async globe() {
     const world = await (await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/land-110m.json')).json();
     const land = topojson.feature(world, world.objects.land);
@@ -216,7 +198,6 @@ const SCENES = {
     const ctx = canvas.getContext('2d');
     const CX = 1350, CY = 548, R = 400, RAD = Math.PI / 180, TILT = 20 * RAD;
     const vec = (lon, lat) => [Math.cos(lat * RAD) * Math.sin(lon * RAD), Math.sin(lat * RAD), Math.cos(lat * RAD) * Math.cos(lon * RAD)];
-    // Turn the globe, then tip the north pole toward the viewer.
     const turn = ([x, y, z], spin) => {
       const x1 = x * Math.cos(spin) + z * Math.sin(spin);
       const z1 = -x * Math.sin(spin) + z * Math.cos(spin);
@@ -250,7 +231,6 @@ const SCENES = {
       .from('#globe .word', { opacity: 0, y: 44, duration: 0.8, ease: 'power3.out' }, 1.0)
       .from('#globe .line', { opacity: 0, y: 26, duration: 0.7, ease: 'power3.out' }, 1.45)
       .to('#globe .block', { opacity: 0, x: -60, duration: 0.4, ease: 'power2.in' }, 4.05)
-      // The last half second dives into the globe, which is where the next shot picks up.
       .to(state, { zoom: 3.1, duration: 0.5, ease: 'expo.in' }, 4.5)
       .to(state, { fade: 1, duration: 0.3, ease: 'power2.in' }, 4.7);
 
@@ -326,7 +306,6 @@ const SCENES = {
     });
   },
 
-  // The caption on each sky shot. It opens with a flash, which hides the cut underneath.
   'ov-label'() {
     const LABELS = {
       sat: ['Satellites', 'Storms, spotted the moment they form.', 'From NASA, around the clock'],
@@ -346,7 +325,6 @@ const SCENES = {
       .to('#ov-label .block, #ov-label .scrim', { opacity: 0, duration: 0.35, ease: 'power2.in' }, length - 0.6);
   },
 
-  // Three feeds flow into one point.
   converge() {
     common('converge');
     const svg = $('#converge svg');
@@ -387,7 +365,6 @@ const SCENES = {
     });
   },
 
-  // Ask a question, get the answer, zoom into the scores, open the reason.
   ask() {
     common('ask');
     const full = 'Hurricane Simon is heading for Mexico';
@@ -399,7 +376,6 @@ const SCENES = {
     const cursor = $('#ask .cursor');
     const click = $('#ask .click');
 
-    // Measure where things end up before anything is animated.
     const closed = reply.getBoundingClientRect().height;
     more.style.height = 'auto';
     const opened = more.getBoundingClientRect().height;
@@ -422,7 +398,6 @@ const SCENES = {
       .to(reply, { opacity: 1, duration: 0.2 }, 2.05)
       .from('#ask .bottom', { opacity: 0, y: 16, duration: 0.4, ease: 'power2.out' }, 2.08)
       .from('#ask .group, #ask .row', { opacity: 0, x: 36, duration: 0.4, stagger: 0.09, ease: 'power3.out' }, 2.22)
-      // Push in on the scores.
       .to(rig, { scale: 1.46, duration: 0.9, ease: 'power3.inOut' }, 3.2)
       .to(win, { rotationY: -5, rotationX: 2, duration: 0.9, ease: 'power3.inOut' }, 3.2)
       .fromTo(cursor, { x: aim.x + 260, y: aim.y + 200 }, { opacity: 1, duration: 0.2, immediateRender: false }, 4.2)
@@ -434,7 +409,6 @@ const SCENES = {
       .from('#ask .step, #ask .arrow', { opacity: 0, x: -18, scale: 0.9, duration: 0.35, stagger: 0.13, ease: 'back.out(1.6)' }, 5.0)
       .from('#ask .math', { opacity: 0, y: 10, duration: 0.4 }, 5.75)
       .to(cursor, { x: aim.x + 180, y: aim.y + 260, opacity: 0, duration: 0.6, ease: 'power2.in' }, 5.3)
-      // Pull back out.
       .to(rig, { scale: 1, duration: 1.0, ease: 'power3.inOut' }, 6.35)
       .to(win, { rotationY: 4, rotationX: 0, duration: 1.0, ease: 'power3.inOut' }, 6.35);
     hideSuper('ask', 3.12, 6.8);
@@ -447,7 +421,6 @@ const SCENES = {
     });
   },
 
-  // The app's map: start on the storm, then pull back as its lines shoot out to each place.
   async mapweb() {
     common('mapweb');
     const win = $('#mapweb .win');
@@ -473,7 +446,6 @@ const SCENES = {
         .to(it.solid, { opacity: 0, duration: 0.35 }, start + 0.8)
         .to(it.flow, { opacity: 1, duration: 0.35 }, start + 0.8);
     });
-    // Second move: lean in on the cruise lines in Miami.
     const miami = m.items.find((it) => it.key === 'miami').at;
     gsap.set(win, { transformOrigin: `${470 + miami[0] - 120}px ${miami[1]}px` });
     tl.to(win, { scale: 1.42, rotationY: -7, rotationX: 3, duration: 1.4, ease: 'power3.inOut' }, 3.5);
@@ -487,11 +459,9 @@ const SCENES = {
     });
   },
 
-  // Three patterns, each with its number and its reason.
   patterns() {
     common('patterns');
     const cards = $$('#patterns .stat');
-    // The middle card's little picture: a ring of planes with nothing inside it.
     const radar = $('#patterns .radar');
     const dots = [];
     radar.innerHTML = '<circle cx="237" cy="60" r="30" fill="#fdf0e6" stroke="#c2570c" stroke-width="3" stroke-dasharray="7 7"/><circle cx="237" cy="60" r="56" fill="none" stroke="#e6e6e6" stroke-width="2"/>';
@@ -518,13 +488,11 @@ const SCENES = {
       .from(dots, { scale: 0, opacity: 0, duration: 0.3, stagger: 0.03, ease: 'back.out(2)', transformOrigin: '50% 50%' }, 0.85)
       .from('#patterns .y', { opacity: 0, y: 16, duration: 0.45, stagger: 0.13, ease: 'power3.out' }, 1.5)
       .fromTo(rig, { x: 26, scale: 1 }, { x: -26, scale: 1.05, duration: 4.2, ease: 'none' }, 0)
-      // Each card lifts in turn.
       .to(cards, { y: -18, duration: 0.3, stagger: 0.28, ease: 'power2.out', yoyo: true, repeat: 1 }, 2.35);
     $$('#patterns .n').forEach((el, i) => count(el, 0.5 + i * 0.13, 0.95));
     leave('patterns', 4.16);
   },
 
-  // The Top stocks page.
   board() {
     common('board');
     const win = $('#board .win');
@@ -549,7 +517,6 @@ const SCENES = {
     leave('board', 3.66);
   },
 
-  // The reader's own holdings, in dollars.
   portfolio() {
     common('portfolio');
     gsap.set(rig, { transformOrigin: '960px 520px' });
@@ -566,7 +533,6 @@ const SCENES = {
     leave('portfolio', 3.66);
   },
 
-  // Hand control: point at the storm and pinch to pick it, drag the map, then zoom with two hands.
   async hand() {
     common('hand');
     const win = $('#hand .win');
@@ -609,7 +575,6 @@ const SCENES = {
     ticks.push((t) => {
       m.tick(t + 3, 0);
       m.stormTag.classList.toggle('picked', t >= 1.54);
-      // Zoom around the point halfway between the two hands.
       const mid = [(dragTo[0] - 200 + dragTo[0]) / 2 - ox, dragTo[1] + 30 - oy];
       const tx = mid[0] - map.s * (mid[0] - map.x);
       const ty = mid[1] - map.s * (mid[1] - map.y);
@@ -621,7 +586,6 @@ const SCENES = {
     });
   },
 
-  // The closing card, with the mascot floating.
   end() {
     rig = $('#end .rig');
     const mascot = $('#end .mascot');

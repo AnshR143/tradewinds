@@ -1,6 +1,3 @@
-// Checks one saved answer against its stamp on Solana.
-// It recomputes the answer's fingerprint from what is in our database now, and compares it
-// with the fingerprint that was written to the chain when the answer was first given.
 import { getAnalysis } from '@/lib/store';
 import { explorerLink, fingerprint, readStamp } from '@/lib/solana';
 

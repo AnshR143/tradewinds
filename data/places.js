@@ -1,10 +1,5 @@
-// Rough map positions used to put events on the globe and sort them by region.
-// Positions are the middle of each country or US state, so a dot marks the country, not
-// the exact spot.
-
 export const REGIONS = ['North America', 'South America', 'Europe', 'Africa', 'Asia', 'Oceania'];
 
-// Where to turn the globe to show each region.
 export const REGION_CENTERS = {
   'North America': { lat: 38, lon: -98 },
   'South America': { lat: -15, lon: -60 },
@@ -14,11 +9,10 @@ export const REGION_CENTERS = {
   Oceania: { lat: -24, lon: 140 },
 };
 
-// Which region a point on the map belongs to. Storms at sea count toward the nearest region.
 export function regionOf(lat, lon) {
   if (lon < -30) return lat >= 7.5 ? 'North America' : 'South America';
   if (lon < 60) {
-    if (lon >= 34 && lat >= 12 && lat < 42) return 'Asia'; // the Middle East
+    if (lon >= 34 && lat >= 12 && lat < 42) return 'Asia';
     return lat >= 36 ? 'Europe' : 'Africa';
   }
   if (lat < -10 && lon >= 110) return 'Oceania';
@@ -41,8 +35,6 @@ export const US_STATES = {
   Washington: [47.4, -120.5], 'West Virginia': [38.6, -80.6], Wisconsin: [44.6, -89.9], Wyoming: [43.0, -107.5],
 };
 
-// name, latitude, longitude, region. Names that are also common words or people's names
-// (Chad, Jordan, Turkey, Georgia) are left out on purpose.
 const COUNTRIES = [
   ['United States', 39.8, -98.6, 'North America'], ['Canada', 56.1, -106.3, 'North America'], ['Mexico', 23.6, -102.5, 'North America'],
   ['Cuba', 21.5, -79.0, 'North America'], ['Haiti', 19.0, -72.3, 'North America'], ['Guatemala', 15.8, -90.2, 'North America'],
@@ -78,8 +70,6 @@ const COUNTRIES = [
 
 const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-// Every place we can recognize in a sentence, longest names first so "South Sudan" wins
-// over "Sudan".
 const PLACES = [
   ...COUNTRIES.map(([name, lat, lon, region]) => ({ name, lat, lon, region })),
   ...Object.entries(US_STATES).map(([name, [lat, lon]]) => ({ name, lat, lon, region: 'North America' })),
@@ -88,7 +78,6 @@ const PLACES = [
   .sort((a, b) => b.name.length - a.name.length)
   .map((place) => ({ ...place, pattern: new RegExp(`\\b${escape(place.name)}\\b`) }));
 
-// The first place named in a piece of text, or null.
 export function findPlace(text) {
   let best = null;
   for (const place of PLACES) {

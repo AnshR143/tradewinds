@@ -1,7 +1,5 @@
 'use client';
 
-// The list of stocks an event is likely to move: one line each, with "See why" to open the
-// reasoning. Used at the top of every answer and on the Top stocks page.
 import { useEffect, useState } from 'react';
 import { Chain, SkeletonRows } from '@/components/bits';
 import { Sparkline } from '@/components/charts';
@@ -32,14 +30,12 @@ export function Price({ price }) {
   );
 }
 
-// Whether the price has started to move the way the signal points.
 export function priceRead(direction, price) {
   if (price?.status !== 'ok' || Math.abs(price.weekPct) < 1) return '';
   const movedWithSignal = (direction === 'tailwind') === (price.weekPct > 0);
   return movedWithSignal ? 'Some of this may already be in the price.' : 'The price has not reacted to this yet.';
 }
 
-// What Wall Street analysts say about the whole company. Published opinion, not ours.
 export function Analysts({ view, price }) {
   const total = view.buy + view.hold + view.sell;
   const share = (n) => `${(n / total) * 100}%`;
@@ -59,13 +55,11 @@ export function Analysts({ view, price }) {
   );
 }
 
-// "Strong +48" in blue for up, "Strong -77" in orange for down.
 export function SignalTag({ direction, score }) {
   const text = score ? `${score.band} ${signed(score.value)}` : direction === 'tailwind' ? 'Up' : 'Down';
   return <span className={`tag ${direction}`}>{text}</span>;
 }
 
-// Shows how a score was worked out, factor by factor.
 function ScoreMath({ score }) {
   return (
     <details className="math">
@@ -92,8 +86,6 @@ function ScoreMath({ score }) {
   );
 }
 
-// What the reader's own shares are worth, and what a move like the stock's biggest one this
-// month would add or take off. Arithmetic on their numbers; it does not say what to do.
 function yourNumbers(stock, shares) {
   if (stock.price?.status !== 'ok') return null;
   if (!shares) return { text: 'Your file gave no share count for this one, so there are no dollar figures.' };
@@ -166,9 +158,6 @@ function Stock({ stock, owned, shares }) {
   );
 }
 
-// One side of the list. Shows the first `first` stocks, with a button for the rest.
-// `empty` is shown when there is nothing on this side; without it the side is left out.
-// `shares` is a Map of ticker to the reader's share count, on the portfolio tab only.
 export function StockList({ direction, stocks, owned, shares, empty, first = 5 }) {
   const [all, setAll] = useState(false);
   if (!stocks.length && !empty) return null;
@@ -185,7 +174,6 @@ export function StockList({ direction, stocks, owned, shares, empty, first = 5 }
   );
 }
 
-// Asked for once per visit, however many news sections are opened.
 let newsStocks = null;
 function loadNewsStocks() {
   if (!newsStocks) {
@@ -194,8 +182,6 @@ function loadNewsStocks() {
   return newsStocks;
 }
 
-// The box under a list of news: which stocks that news is likely to move.
-// `news` is the list shown above it, so the box only covers what the reader can see.
 export function NewsStocks({ news }) {
   const [data, setData] = useState(null);
   useEffect(() => {
@@ -235,7 +221,6 @@ export function NewsStocks({ news }) {
   );
 }
 
-// The Top stocks page: every stock that events happening right now are likely to move.
 export function StocksPage() {
   const [board, setBoard] = useState(null);
 

@@ -1,4 +1,3 @@
-// Takes an observation and returns the full answer: ripple ideas, price moves, odds and news used.
 import { traceRipple } from '@/lib/ai';
 import { searchNews } from '@/lib/news';
 import { getOdds } from '@/lib/markets';
@@ -11,9 +10,6 @@ import { getAnalystView } from '@/lib/analysts';
 import { scoreSignal } from '@/lib/score';
 import { currentUser } from '@/lib/auth';
 
-// Open questions like "what should I invest in?" or "which stocks are bullish?".
-// A question about one named company ("should I invest in Carnival?") does not match, and
-// neither does an observation like "steel prices are going up".
 const ASKS_FOR_IDEAS = /\b(what|which|where)\b[^.?!]*\b(invest|buy|bullish|put my money|go up|going up|top stocks?)\b/i;
 
 export const dynamic = 'force-dynamic';
@@ -24,13 +20,11 @@ function signed(pct) {
   return `${pct >= 0 ? 'up' : 'down'} ${Math.abs(pct).toFixed(1)} percent`;
 }
 
-// The AI sometimes leaves off the final period, which runs spoken sentences together.
 function sentence(text) {
   const trimmed = String(text || '').trim();
   return !trimmed || /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
 
-// The text that gets read aloud, written like a short weather forecast.
 function forecast(result) {
   if (result.needsClarification) return result.question;
   const parts = [result.reply, result.summary].filter(Boolean);
@@ -46,8 +40,6 @@ function forecast(result) {
   return parts.join(' ');
 }
 
-// Saves the answer, then stamps its fingerprint on Solana. This runs after the reply has
-// been sent, so the reader never waits for it.
 async function record(answer) {
   try {
     const hash = fingerprint(answer);
@@ -58,13 +50,10 @@ async function record(answer) {
   }
 }
 
-// Words that end up in uploaded portfolios but are not a stock or fund the AI should guess about.
 const NOT_A_STOCK = new Set(['BOND', 'BONDS', 'USD', 'CASH']);
 
 const MAP_TICKERS = new Set(SCENARIOS.flatMap((s) => s.links.flatMap((l) => l.companies.map((c) => c.ticker))));
 
-// Which of the reader's holdings this event touches, read straight from the impact map.
-// Returns null when no portfolio was sent.
 async function checkHoldings(tickers, scenarioIds, ideas, live) {
   if (!tickers.length) return null;
   const held = new Set(tickers);
@@ -87,7 +76,6 @@ async function checkHoldings(tickers, scenarioIds, ideas, live) {
   const exposed = await Promise.all([...touched.values()].map(async (h) => {
     const price = await getPriceMove(h.ticker);
     const analysts = await getAnalystView(h.ticker).catch(() => null);
-    // Use the score already shown for this company, so the two lists never disagree.
     const shown = ideas.find((i) => i.ticker === h.ticker && i.direction === h.direction);
     const onBoard = live && [...live.bullish, ...live.bearish].find((e) => e.ticker === h.ticker && e.direction === h.direction);
     const score = shown?.score || scoreSignal({ direction: h.direction, confidence: h.confidence, events: onBoard?.events.length || 0, strength: onBoard?.strength || 1, price, analysts });
@@ -106,11 +94,9 @@ export async function POST(request) {
   const observation = String(body.observation || '').trim().slice(0, MAX_LENGTH);
   const clarification = String(body.clarification || '').trim().slice(0, 200);
   const scenarioHint = String(body.scenario || '').slice(0, 60);
-  // The previous question and answer in this chat, so a follow-up like "what about airlines?" makes sense.
   const earlier = body.earlier?.observation
     ? { observation: String(body.earlier.observation).slice(0, MAX_LENGTH), summary: String(body.earlier.summary || '').slice(0, 300) }
     : null;
-  // Ticker symbols only. Share counts stay in the reader's browser.
   const portfolio = (Array.isArray(body.portfolio) ? body.portfolio : [])
     .map((t) => String(t).toUpperCase().replace(/[^A-Z.]/g, '').slice(0, 7))
     .filter(Boolean)
@@ -119,8 +105,6 @@ export async function POST(request) {
 
   const news = await searchNews(earlier ? `${observation} ${earlier.observation}` : observation);
 
-  // Everything happening now, matched to the map. Used to score each company, and shown in
-  // full when the reader asks an open question like "what should I invest in?".
   const live = await signalBoard().catch(() => null);
   const board = !clarification && ASKS_FOR_IDEAS.test(observation) ? live : null;
 
@@ -133,7 +117,6 @@ export async function POST(request) {
   }
 
   if (board && !result.needsClarification && !result.sample) {
-    // The companies shown are the strongest bullish signals on the board, straight from the map.
     result.ideas = board.bullish.slice(0, 4).map((b) => ({
       mapped: true,
       scenario: b.scenario,
@@ -161,12 +144,10 @@ export async function POST(request) {
     getOdds(result.oddsQuery),
   ]);
 
-  // Drop any idea whose ticker the price feed says does not exist.
   result.ideas = result.ideas
     .map((idea, i) => ({ ...idea, price: prices[i], analysts: analysts[i] }))
     .filter((idea) => idea.price.status !== 'not-found')
     .map((idea) => {
-      // The live event behind this company, if there is one, sets how strong the event is.
       const onBoard = live && [...live.bullish, ...live.bearish].find((e) => e.ticker === idea.ticker && e.direction === idea.direction);
       const score = scoreSignal({
         direction: idea.direction,
@@ -188,7 +169,6 @@ export async function POST(request) {
   const scenarioIds = new Set(result.ideas.map((idea) => idea.scenarioId).filter(Boolean));
   const holdings = result.needsClarification || result.sample ? null : await checkHoldings(portfolio, scenarioIds, result.ideas, live);
   if (holdings) {
-    // Holdings that are not on the map get the AI's own read, labeled as unchecked.
     holdings.reads = result.otherHoldings || [];
     holdings.offMap = holdings.offMap.filter((t) => !holdings.reads.some((r) => r.ticker === t));
   }
@@ -197,7 +177,6 @@ export async function POST(request) {
   const answer = {
     ...result,
     holdings,
-    // Every signal from events happening now, when the reader asked where to look.
     board: board && !result.needsClarification ? { bullish: board.bullish.map(brief), bearish: board.bearish.map(brief) } : null,
     odds: result.needsClarification ? [] : odds,
     news: usedNews,

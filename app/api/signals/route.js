@@ -1,4 +1,3 @@
-// What is happening right now: sky feeds plus recent world events.
 import { getWeatherSignals } from '@/lib/feeds/weather';
 import { getEonetSignals } from '@/lib/feeds/eonet';
 import { getCommoditySignals } from '@/lib/feeds/commodities';
@@ -7,13 +6,10 @@ import { saveSignals } from '@/lib/store';
 import { startPlaneWatch, startPriceWarmer } from '@/lib/warm';
 import { findPlace } from '@/data/places';
 
-// News about decisions (elections, laws, the economy) goes to the Politics page.
-// Everything else (conflicts, disasters, health) goes to the Geopolitical page.
 const POLITICS = new Set(['Politics and elections', 'Business and economy']);
 
 export const dynamic = 'force-dynamic';
 
-// One feed being down should not empty the whole page.
 async function orEmpty(name, load) {
   try {
     return await load();
@@ -36,7 +32,6 @@ export async function GET() {
   const sky = [...nasa.signals, ...weather, ...prices];
   saveSignals(sky);
 
-  // When NASA's feed is down we show its last good report, and say so.
   let skyNote = '';
   if (!nasa.live) {
     skyNote = nasa.asOf

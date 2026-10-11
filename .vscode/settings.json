@@ -1,0 +1,17 @@
+{
+  // Keeps the file list to our own code. The keys file is hidden so it is never opened on a shared screen.
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.env.local": true,
+    "**/.DS_Store": true,
+    "**/package-lock.json": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true
+  },
+  "workbench.startupEditor": "none",
+  "editor.minimap.enabled": false,
+  "editor.fontSize": 14
+}

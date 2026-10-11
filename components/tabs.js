@@ -1,6 +1,5 @@
 'use client';
 
-// The pages reached from the sidebar, other than the chat.
 import { useMemo, useState } from 'react';
 import { SCENARIOS, scenarioLabel } from '@/data/impact-graph';
 import { CHOKEPOINTS } from '@/data/chokepoints';
@@ -24,7 +23,6 @@ function kindOf(item) {
 const HURRICANE_MPH = 74;
 const MAX_BAR_MPH = 160;
 
-// One line in a list. Clicking it opens the details underneath, which hold the only button.
 function Line({ open, onToggle, title, text, meta, children }) {
   return (
     <li className={`line ${open ? 'open' : ''}`}>
@@ -52,7 +50,6 @@ function AskButton({ item, loading, onPick, label = 'Ask what follows' }) {
   return <button className="btn small primary" disabled={loading} onClick={() => onPick(item)}>{label}</button>;
 }
 
-// News events as compact lines: a title, one line of text, and the place and date.
 function NewsLines({ items, loading, onPick, empty }) {
   const [openId, setOpenId] = useState(null);
   if (!items.length) return <p className="muted">{empty}</p>;
@@ -63,7 +60,6 @@ function NewsLines({ items, loading, onPick, empty }) {
           key={n.id}
           open={openId === n.id}
           onToggle={() => setOpenId(openId === n.id ? null : n.id)}
-          // Events without a headline of their own show their text once, not twice.
           title={n.title !== n.category ? n.title : n.text}
           text={n.title !== n.category ? n.text : null}
           meta={<>{n.where && <span>{n.where}</span>}<span className="muted">{new Date(`${n.date}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span></>}
@@ -76,8 +72,6 @@ function NewsLines({ items, loading, onPick, empty }) {
     </ul>
   );
 }
-
-// ---- Geopolitical -------------------------------------------------------------------------
 
 function NaturalLines({ items, loading, onPick }) {
   const [openId, setOpenId] = useState(null);
@@ -163,7 +157,6 @@ function AlertLines({ items, loading, onPick }) {
   );
 }
 
-// A row of section buttons, shown only on small screens where the sidebar dropdown is hidden.
 function SmallScreenTabs({ sections, active, onChange, counts }) {
   return (
     <div className="tabs only-small" role="tablist">
@@ -214,8 +207,6 @@ export function GeopoliticalTab({ signals, sub, onSub, loading, onPick, onPage }
   );
 }
 
-// ---- Politics and odds --------------------------------------------------------------------
-
 function MarketCard({ market, loading, onAsk }) {
   return (
     <div className="card market">
@@ -231,7 +222,6 @@ function MarketCard({ market, loading, onAsk }) {
   );
 }
 
-// One market at a time, with arrows to step through the rest.
 function MarketStepper({ markets, loading, onAsk }) {
   const [at, setAt] = useState(0);
   const index = Math.min(at, markets.length - 1);
@@ -266,7 +256,6 @@ export function PoliticsTab({ signals, markets, sub, onSub, loading, onPick, onS
   const source = <p className="muted small" style={{ marginTop: 18 }}>Odds are from Polymarket.</p>;
   const smallTabs = <SmallScreenTabs sections={[{ id: 'overview', label: 'Overview' }, ...POLITICS_SECTIONS]} active={sub} onChange={onSub} />;
 
-  // Everything in one topic.
   if (group) {
     return (
       <>
@@ -283,7 +272,6 @@ export function PoliticsTab({ signals, markets, sub, onSub, loading, onPick, onS
     );
   }
 
-  // All the political news.
   if (sub === 'news') {
     return (
       <>
@@ -300,7 +288,6 @@ export function PoliticsTab({ signals, markets, sub, onSub, loading, onPick, onS
     );
   }
 
-  // Overview: one market from each topic, and the newest few events.
   return (
     <>
       {smallTabs}
@@ -332,8 +319,6 @@ export function PoliticsTab({ signals, markets, sub, onSub, loading, onPick, onS
     </>
   );
 }
-
-// ---- Impact map ---------------------------------------------------------------------------
 
 function LinkCard({ link }) {
   return (
@@ -368,13 +353,11 @@ export function MapTab({ signals, loading, onPick }) {
   const [scenarioId, setScenarioId] = useState(SCENARIOS[0].id);
   const [expanded, setExpanded] = useState(false);
 
-  // The big map takes the whole screen. The request has to be made inside the click.
   function expand() {
     document.documentElement.requestFullscreen?.().catch(() => {});
     setExpanded(true);
   }
 
-  // Everything we caught that can be placed on the map.
   const caught = useMemo(() => [
     ...(signals?.sky || []),
     ...(signals?.news || []).filter((n) => n.lat !== null),
@@ -385,7 +368,6 @@ export function MapTab({ signals, loading, onPick }) {
   const countIn = (region) => caught.filter((d) => d.region === region).length;
 
   const regionKey = [...regions].sort().join('|');
-  // Memoized so the globe is only rebuilt when the dots themselves change.
   const markers = useMemo(() => [
     ...ports.map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, size: 0.02, color: CHOKEPOINT_COLOR, name: p.title, item: p })),
     ...visible.map((d, i) => ({
@@ -397,11 +379,11 @@ export function MapTab({ signals, loading, onPick }) {
       name: d.title !== d.category ? d.title : d.text.slice(0, 48),
       item: d,
     })),
-  ], [signals, regionKey, showPorts]); // eslint-disable-line react-hooks/exhaustive-deps
+  ], [signals, regionKey, showPorts]);
 
   const arcs = useMemo(() => visible.flatMap((d, i) =>
     (d.near || []).map((p, j) => ({ id: `arc-${i}-${j}`, from: [d.lat, d.lon], to: [p.lat, p.lon] })),
-  ), [signals, regionKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  ), [signals, regionKey]);
 
   function toggle(region) {
     const next = new Set(regions);
@@ -411,7 +393,6 @@ export function MapTab({ signals, loading, onPick }) {
     setSelected(null);
   }
 
-  // Turn to the selected dot, or to the region when only one is ticked.
   let focus = null;
   if (selected) focus = { lat: selected.lat, lon: selected.lon };
   else if (regions.size === 1) focus = REGION_CENTERS[[...regions][0]];
@@ -527,8 +508,6 @@ export function MapTab({ signals, loading, onPick }) {
   );
 }
 
-// ---- History ------------------------------------------------------------------------------
-
 function dayLabel(time) {
   const day = new Date(time);
   const today = new Date();
@@ -538,7 +517,6 @@ function dayLabel(time) {
   return day.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
-// The same question asked several times shows once, with its newest answer.
 function withoutRepeats(history) {
   const seen = new Map();
   for (const item of history) {
@@ -555,8 +533,6 @@ function Tickers({ ideas, direction }) {
   return picked.map((i) => <span key={i.ticker} className={`tag ${direction}`} title={i.name}>{i.ticker}</span>);
 }
 
-// Each answer's fingerprint is stamped on Solana when it is given. This lets a reader check
-// that the answer shown here is the same one that was stamped.
 function Proof({ item }) {
   const [check, setCheck] = useState(null);
   if (!item.proof) return null;
@@ -629,8 +605,6 @@ export function HistoryTab({ history, loading, onAnalyze, saved }) {
     </>
   );
 }
-
-// ---- Settings -----------------------------------------------------------------------------
 
 function CheckList({ title, note, options, hidden, onToggle }) {
   return (

@@ -1,4 +1,3 @@
-// Who is signed in, if anyone.
 import { accountsAvailable, currentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

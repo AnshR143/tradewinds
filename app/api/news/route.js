@@ -1,4 +1,3 @@
-// "Find more news": searches every news source for one question and returns what is new.
 import { findMoreNews } from '@/lib/news';
 
 export const dynamic = 'force-dynamic';

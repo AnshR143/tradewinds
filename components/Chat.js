@@ -1,14 +1,11 @@
 'use client';
 
-// The Ask page: a chat. Your messages sit on the right, TradeWinds answers on the left,
-// and the box you type in stays at the bottom.
 import { useEffect, useRef, useState } from 'react';
 import Answer from '@/components/Answer';
 import { KIND, Skeleton } from '@/components/bits';
 
 const EXAMPLES = ['Gold is getting expensive in India', 'Steel prices are going up', 'Eggs cost more at my store'];
 
-// Types each example into the empty box, pauses, clears it, and moves to the next.
 function useTypedHint(active) {
   const [hint, setHint] = useState('');
   useEffect(() => {
@@ -50,7 +47,6 @@ function Composer({ onSend, busy, showHint }) {
 
   function grow() {
     const el = box.current;
-    // The box is swapped for a new one when the first message is sent.
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
@@ -124,7 +120,6 @@ export default function Chat({ messages, busy, signals, portfolio, onSend, onPic
   const lastAskId = messages.filter((m) => m.role === 'user').pop()?.id;
   const topSignals = (signals?.sky || []).slice(0, 3);
 
-  // Keep the newest question at the top of the screen, with its answer below it.
   useEffect(() => {
     lastAsk.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [messages.length, busy]);

@@ -12,8 +12,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${body.variable} ${heading.variable}`}>
-      {/* Browser extensions such as Grammarly add attributes to <body> before React loads.
-          This tells React not to warn about that difference. */}
       <body suppressHydrationWarning>{children}</body>
     </html>
   );

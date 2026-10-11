@@ -1,6 +1,3 @@
-// Where each company on the impact map has its head office, so the big map can draw a line
-// from an event to the places it touches. Funds are left out: they have no single place.
-// Written by hand, like the impact map. The team should check these.
 export const COMPANY_PLACES = {
   HD: { city: 'Atlanta, Georgia', lat: 33.75, lon: -84.39 },
   SO: { city: 'Atlanta, Georgia', lat: 33.75, lon: -84.39 },

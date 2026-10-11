@@ -1,14 +1,11 @@
 'use client';
 
-// A slowly turning globe with dots you can click. Drag to spin it. When `focus` is set it
-// turns to that place. Built on the cobe library.
 import { useEffect, useRef } from 'react';
 import createGlobe from 'cobe';
 
 const SPIN_SPEED = 0.002;
 const TILT = 0.25;
 
-// Where the globe has to be turned to so a place faces the viewer.
 function anglesFor(lat, lon) {
   return {
     phi: Math.PI - ((lon * Math.PI) / 180 - Math.PI / 2),
@@ -23,15 +20,10 @@ function colors() {
     : { dark: 0, baseColor: [1, 1, 1], glowColor: [0.96, 0.96, 0.96], mapBrightness: 7 };
 }
 
-// markers: [{ id, lat, lon, size, color: [r, g, b], name }]
-//          Each is a clickable dot. Its name shows when you point at it or select it.
-// arcs:    [{ id, from: [lat, lon], to: [lat, lon] }]
-// focus:   { lat, lon } or null
 export default function Globe({ markers, arcs, focus, selectedId, onSelect }) {
   const canvasRef = useRef(null);
   const focusRef = useRef(focus);
   const drag = useRef({ start: null, offset: 0 });
-  // Kept between rebuilds so the globe does not jump back when the dots change.
   const view = useRef({ phi: 4.2, theta: TILT });
 
   useEffect(() => {
@@ -68,7 +60,6 @@ export default function Globe({ markers, arcs, focus, selectedId, onSelect }) {
       const dragging = drag.current.start !== null;
       const now = view.current;
       if (target && !dragging) {
-        // Ease toward the focused place, turning whichever way is shorter.
         const goal = anglesFor(target.lat, target.lon);
         const full = Math.PI * 2;
         const forward = (((goal.phi - now.phi) % full) + full) % full;
@@ -89,7 +80,6 @@ export default function Globe({ markers, arcs, focus, selectedId, onSelect }) {
     }
     function onUp() {
       if (drag.current.start === null) return;
-      // Fold the drag into the globe's own angle so it keeps its place.
       view.current.phi += drag.current.offset;
       drag.current = { start: null, offset: 0 };
       canvas.style.cursor = 'grab';
@@ -118,7 +108,6 @@ export default function Globe({ markers, arcs, focus, selectedId, onSelect }) {
         <button
           key={m.id}
           className={`globe-dot ${selectedId === m.id ? 'selected' : ''}`}
-          // cobe publishes each marker's screen position and whether it is on the near side.
           style={{ positionAnchor: `--cobe-${m.id}`, scale: `var(--cobe-visible-${m.id}, 0)` }}
           onClick={() => onSelect?.(m)}
           aria-label={m.name}

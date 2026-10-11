@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "app/api/**/route.js": { "maxDuration": 60 }
+  }
+}

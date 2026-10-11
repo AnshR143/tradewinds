@@ -1,4 +1,3 @@
-// Ends the session and clears the cookie.
 import { NextResponse } from 'next/server';
 import { COOKIE, cookieOptions, endSession, sameOrigin } from '@/lib/auth';
 

@@ -13,7 +13,6 @@
   .scene { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: none; }
   .scene.on { display: block; }
 
-  /* ---------- Shared: the dark sky the app windows float in ---------- */
   .space { background: radial-gradient(1500px 950px at 66% 48%, #0f3052 0%, #081b30 46%, #06121f 100%); }
   .stars { position: absolute; inset: -120px; opacity: 0.55; background-image: radial-gradient(rgba(190, 230, 255, 0.6) 1.1px, transparent 1.5px), radial-gradient(rgba(190, 230, 255, 0.32) 1px, transparent 1.4px); background-size: 137px 137px, 89px 89px; background-position: 0 0, 40px 60px; }
   .glow { position: absolute; left: 420px; top: 220px; width: 1400px; height: 820px; border-radius: 50%; background: radial-gradient(closest-side, rgba(28, 176, 246, 0.34), rgba(28, 176, 246, 0)); }
@@ -33,7 +32,6 @@
   .tagp { padding: 6px 18px; border-radius: 999px; font-size: 23px; font-weight: 600; white-space: nowrap; }
   .tagp.up { background: var(--up-bg); color: var(--up); } .tagp.down { background: var(--down-bg); color: var(--down); }
 
-  /* ---------- Opening globe ---------- */
   #globe { background: var(--navy); }
   #globe canvas { position: absolute; inset: 0; }
   #globe .black { position: absolute; inset: 0; background: #000; }
@@ -42,13 +40,11 @@
   #globe .word { font-family: 'DM Sans'; font-size: 150px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; margin: 10px 0 20px -6px; }
   #globe .line { font-size: 39px; line-height: 1.32; color: rgba(255, 255, 255, 0.86); max-width: 700px; }
 
-  /* ---------- Captions over the sky shots (transparent background) ---------- */
   #ov-label .scrim { position: absolute; inset: 0; background: linear-gradient(20deg, rgba(6, 18, 31, 0.9) 0%, rgba(6, 18, 31, 0.5) 26%, rgba(6, 18, 31, 0) 52%); }
   #ov-label .block { position: absolute; left: 110px; bottom: 100px; color: #fff; }
   #ov-label .headline { font-family: 'DM Sans'; font-size: 78px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.06; margin-top: 20px; max-width: 1150px; text-shadow: 0 2px 30px rgba(6, 18, 31, 0.7); }
   #ov-label .source { margin-top: 16px; font-size: 26px; color: rgba(255, 255, 255, 0.74); }
 
-  /* ---------- Three feeds into one ---------- */
   #converge svg { position: absolute; inset: 0; }
   #converge .feed { position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; padding: 14px 28px 14px 20px; background: rgba(13, 38, 62, 0.95); border: 2px solid rgba(28, 176, 246, 0.75); color: #e9f7ff; font-size: 30px; font-weight: 500; white-space: nowrap; box-shadow: 0 0 30px rgba(28, 176, 246, 0.35); }
   #converge .feed i { width: 16px; height: 16px; border-radius: 50%; background: var(--blue); }
@@ -58,7 +54,6 @@
   #converge .say { position: absolute; left: 0; right: 0; top: 620px; text-align: center; color: #fff; font-family: 'DM Sans'; font-size: 96px; font-weight: 500; letter-spacing: -0.04em; }
   #converge .say b { color: var(--blue); font-weight: 600; }
 
-  /* ---------- Ask and answer ---------- */
   .pane { position: absolute; left: 0; right: 0; top: 0; }
   .compose { padding: 38px 46px; }
   .compose .q { font-family: 'DM Sans'; font-size: 46px; font-weight: 500; letter-spacing: -0.03em; }
@@ -83,7 +78,6 @@
   .math { flex-basis: 100%; margin-top: 6px; font: 500 21px ui-monospace, Menlo, monospace; color: var(--muted); }
   .math b { color: var(--text); }
 
-  /* ---------- The map ---------- */
   .mapwin { background: #eef5fb; }
   .mapmove { position: absolute; inset: 0; transform-origin: 0 0; }
   .mapwin svg { position: absolute; inset: 0; }
@@ -108,7 +102,6 @@
   #hand svg.hands { position: absolute; inset: 0; z-index: 12; overflow: visible; filter: drop-shadow(0 0 10px rgba(28, 176, 246, 0.9)); }
   .pointer { position: absolute; left: 0; top: 0; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; border: 5px solid var(--blue); background: rgba(28, 176, 246, 0.2); box-shadow: 0 0 0 3px #fff; z-index: 11; }
 
-  /* ---------- Patterns ---------- */
   .stat { padding: 34px 36px; }
   .stat .k { font-size: 20px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
   .stat .t { font-family: 'DM Sans'; font-size: 34px; font-weight: 500; letter-spacing: -0.02em; margin-top: 6px; }
@@ -119,7 +112,6 @@
   .stat .y { padding: 12px 18px; border-radius: 16px; background: var(--inset); font-size: 21px; color: #404040; line-height: 1.3; }
   .stat .y b { color: var(--text); }
 
-  /* ---------- Top stocks ---------- */
   .board { padding: 34px 44px; }
   .board h3, .folio h3 { font-family: 'DM Sans'; font-size: 44px; font-weight: 500; letter-spacing: -0.03em; }
   .board .sub, .folio .sub { font-size: 23px; color: var(--muted); margin-top: 4px; }
@@ -133,7 +125,6 @@
   .num { font-family: 'DM Sans'; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; text-align: right; }
   .num.up { color: var(--up); } .num.down { color: var(--down); }
 
-  /* ---------- Your stocks ---------- */
   .folio { padding: 34px 44px; }
   .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 22px; }
   .tile { padding: 22px 28px; border-radius: 22px; background: var(--inset); }
@@ -146,7 +137,6 @@
   .frow .calc b { color: var(--text); }
   .own { padding: 4px 14px; border-radius: 999px; background: #171717; color: #fff; font-size: 19px; font-weight: 500; }
 
-  /* ---------- End card ---------- */
   #end { background: #fff; }
   #end .dots { position: absolute; right: -260px; top: -160px; width: 1400px; height: 1400px; border-radius: 50%; background-image: radial-gradient(rgba(28, 176, 246, 0.28) 2.4px, transparent 2.6px); background-size: 26px 26px; -webkit-mask-image: radial-gradient(circle, #000 30%, transparent 68%); mask-image: radial-gradient(circle, #000 30%, transparent 68%); }
   #end .text { position: absolute; left: 150px; top: 318px; width: 940px; }

@@ -1,6 +1,5 @@
 'use client';
 
-// The landing page. The mascot floats and holds a sign that starts the chat.
 import { motion, useReducedMotion } from 'motion/react';
 import { SCENARIOS } from '@/data/impact-graph';
 import { CHOKEPOINTS } from '@/data/chokepoints';

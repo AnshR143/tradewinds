@@ -1,7 +1,3 @@
-// Renders one scene to a numbered image sequence, one screenshot per frame.
-// node render.cjs <scene> <seconds> <outDir> [alpha] [times]
-//   alpha: "alpha" saves PNGs with a see-through background (for overlays)
-//   times: a comma list of seconds, to save only those frames (for a quick look)
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');

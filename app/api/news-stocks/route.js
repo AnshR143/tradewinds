@@ -1,4 +1,3 @@
-// The stocks the latest news is likely to move.
 import { stocksFromNews } from '@/lib/newsStocks';
 
 export const dynamic = 'force-dynamic';

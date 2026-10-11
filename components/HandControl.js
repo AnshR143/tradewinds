@@ -1,25 +1,15 @@
 'use client';
 
-// Hand control for the big map. The camera picture is read on this device by Google's
-// MediaPipe hand tracker and never leaves the browser. lib/gestures.js turns the hand
-// positions into drags and zooms; this file moves the map and does the clicking.
 import { useEffect, useRef, useState } from 'react';
 import { createGestures } from '@/lib/gestures';
 
-// The tracker's engine and its model are fetched the first time hand control is switched
-// on. Keep the version here in step with @mediapipe/tasks-vision in package.json.
 const ENGINE = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0/wasm';
 const MODEL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
 
-// Which landmarks to join with a line to draw a hand.
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
-// Dots on the map light up when the pointer comes this close, so they are easy to hit.
 const SNAP = 70;
 const POINTS = '.bigmap .web-event, .bigmap .web-place, .bigmap .web-ship, .bigmap .web-airport';
 const BUTTONS = '.web-events button, .web-patterns button, .layer-chips button, .bigmap-panel .chip';
-// The camera sees the hand about 30 times a second and the screen redraws 60 or more. The
-// map and the pointer glide toward where the hand says to go, a bit every redraw, so the
-// movement looks continuous. This is how quickly they catch up, in milliseconds.
 const GLIDE = 85;
 
 function problem(err) {
@@ -30,13 +20,10 @@ function problem(err) {
   return 'Could not start the hand tracker. Check the internet connection and try again.';
 }
 
-// What a pinch at this spot would click: a button in the panel if the pointer is right on
-// one, otherwise the nearest event or city within reach.
 function targetAt(x, y) {
   const under = document.elementFromPoint(x, y);
   const button = under?.closest(BUTTONS);
   if (button) return button;
-  // Over the panel or the camera box, dots hidden underneath do not count.
   if (under?.closest('.bigmap-panel, .bigmap-tools')) return null;
   let best = null;
   let bestGap = SNAP;
@@ -49,13 +36,13 @@ function targetAt(x, y) {
 }
 
 export default function HandControl({ getMap }) {
-  const [state, setState] = useState('off'); // off | starting | on | error
+  const [state, setState] = useState('off');
   const [note, setNote] = useState('');
   const [mode, setMode] = useState('idle');
   const video = useRef(null);
   const canvas = useRef(null);
   const pointers = useRef([]);
-  const run = useRef(null); // { stream, tracker, frame, aimed }
+  const run = useRef(null);
 
   function stop() {
     const r = run.current;
@@ -70,7 +57,6 @@ export default function HandControl({ getMap }) {
 
   useEffect(() => stop, []);
 
-  // Draws the hands over the small camera picture, so you can see what the tracker sees.
   function draw(hands, tracked) {
     const el = canvas.current;
     if (!el) return;
@@ -99,17 +85,13 @@ export default function HandControl({ getMap }) {
     const r = { stream: null, tracker: null, frame: 0, aimed: [null, null] };
     run.current = r;
     try {
-      // read(now) returns the hands in the newest camera picture, or null when there is no
-      // new picture yet.
       let read;
       let aspect = 4 / 3;
-      // For testing without a camera, in development only: a page can supply made-up hands.
       const madeUp = process.env.NODE_ENV !== 'production' && typeof window.__handsForTesting === 'function' ? window.__handsForTesting : null;
       if (madeUp) {
         let last = 0;
         read = (now) => (now - last < 33 ? null : ((last = now), madeUp(now)));
       } else {
-        // Ask for the camera first, while this is still inside the click.
         r.stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, frameRate: { ideal: 60 }, facingMode: 'user' }, audio: false });
         if (run.current !== r) return void r.stream.getTracks().forEach((t) => t.stop());
         video.current.srcObject = r.stream;
@@ -131,15 +113,12 @@ export default function HandControl({ getMap }) {
       }
 
       const gestures = createGestures();
-      // Movement the hand has asked for that the map has not made yet.
       const owed = { dx: 0, dy: 0, zoom: 0, x: 0, y: 0 };
-      // Where each pointer is drawn, and where its hand says it should be.
       const drawn = [null, null];
       const wanted = [null, null];
       let lastMode = 'idle';
       let lastFrame = performance.now();
 
-      // Runs when the camera has a new picture.
       const see = (hands, now) => {
         const out = gestures.update(hands, { width: window.innerWidth, height: window.innerHeight, aspect }, now);
         for (const action of out.actions) {
@@ -156,14 +135,12 @@ export default function HandControl({ getMap }) {
         for (let i = 0; i < 2; i++) {
           const hand = out.hands[i];
           wanted[i] = hand || null;
-          // A hand that is dragging or zooming is not aiming at anything.
-          const aim = hand && (!hand.pinching || hand.pressed) ? targetAt(hand.x, hand.y) : null;
+          const aim = hand && out.hands.length === 1 && (!hand.pinching || hand.pressed) ? targetAt(hand.x, hand.y) : null;
           if (aim !== r.aimed[i]) {
             r.aimed[i]?.classList.remove('hand-hover');
             aim?.classList.add('hand-hover');
             r.aimed[i] = aim;
           }
-          // Pinching while something is lit up clicks it, and that pinch does not drag.
           if (hand?.pressed && aim) {
             gestures.block(hand.id);
             aim.click();
@@ -178,7 +155,6 @@ export default function HandControl({ getMap }) {
         if (out.mode !== lastMode) setMode((lastMode = out.mode));
       };
 
-      // Runs every time the screen redraws.
       const tick = () => {
         if (run.current !== r) return;
         r.frame = requestAnimationFrame(tick);
@@ -194,7 +170,6 @@ export default function HandControl({ getMap }) {
           const dx = owed.dx * share;
           const dy = owed.dy * share;
           if (Math.abs(dx) + Math.abs(dy) > 0.02) {
-            // The map follows the hand, like dragging it with a mouse.
             map.panBy([-dx, -dy], { animate: false });
             owed.dx -= dx;
             owed.dy -= dy;
@@ -257,9 +232,9 @@ export default function HandControl({ getMap }) {
         {state === 'error' && <p className="error small" role="alert">{note}</p>}
         {live && (
           <ul className="hand-help">
-            <li><b>Click:</b> move the ring onto an event or city until it lights up, then pinch.</li>
+            <li><b>Click:</b> with one hand up, move the ring onto an event or city until it lights up, then pinch.</li>
             <li><b>Drag:</b> pinch on empty map, then move your hand.</li>
-            <li><b>Zoom:</b> pinch with both hands, pull apart or push together.</li>
+            <li><b>Zoom:</b> hold up both hands, pinch with both, then pull apart or push together.</li>
           </ul>
         )}
         {live && <p className="muted small">The video stays on this device.</p>}

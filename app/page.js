@@ -20,11 +20,9 @@ const PAGES = {
   settings: ['Settings', 'Your portfolio and what you want to see.'],
 };
 
-// The first section a page opens on.
 const FIRST_SUB = { geo: 'storms', politics: 'overview' };
 const PREFS_KEY = 'tradewinds-settings';
 const PORTFOLIO_KEY = 'tradewinds-portfolio';
-// Set for this tab once the reader has chosen to carry on without an account.
 const GUEST_KEY = 'tradewinds-guest';
 
 function Sidebar({ page, sub, onPage, status, signals, prefs, user, onLogout }) {
@@ -112,7 +110,6 @@ export default function App() {
   const [page, setPage] = useState('home');
   const [sub, setSub] = useState('');
   const [status, setStatus] = useState(null);
-  // The signed-in reader, or null for a guest. `accounts` is false when the server has no database.
   const [user, setUser] = useState(null);
   const [accounts, setAccounts] = useState(null);
   const [allSignals, setAllSignals] = useState(null);
@@ -123,10 +120,8 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [busy, setBusy] = useState(false);
   const [speakingId, setSpeakingId] = useState(null);
-  // The newest finished answer, kept outside React state so a send can read it right away.
   const last = useRef(null);
 
-  // Everything below works from the filtered lists, so Settings apply to every page.
   const signals = useMemo(() => applyPrefs(allSignals, prefs), [allSignals, prefs]);
   const markets = useMemo(() => applyMarketPrefs(allMarkets, prefs), [allMarkets, prefs]);
 
@@ -147,11 +142,8 @@ export default function App() {
       const holdings = JSON.parse(window.localStorage.getItem(PORTFOLIO_KEY));
       if (Array.isArray(holdings)) setPortfolio(holdings);
     } catch {
-      // Settings could not be read, so everything is shown.
     }
 
-    // Open the section named in the address bar, so a refresh or the back button lands on
-    // the right page. The address looks like #geo/conflicts.
     const openFromAddress = () => {
       const [id, section] = window.location.hash.slice(1).split('/');
       const known = PAGES[id] ? id : 'home';
@@ -168,28 +160,24 @@ export default function App() {
     const nextSub = section || FIRST_SUB[id] || '';
     setPage(id);
     setSub(nextSub);
-    // Stamps land a second or two after an answer, so fetch the latest when History opens.
     if (id === 'history') loadHistory();
     const address = id === 'home' ? window.location.pathname : `#${id}${nextSub && nextSub !== FIRST_SUB[id] ? `/${nextSub}` : ''}`;
     window.history.replaceState(null, '', address);
     window.scrollTo(0, 0);
   }
 
-  // "Get started": straight in for someone signed in or already browsing as a guest,
-  // otherwise to the login page first.
   function start() {
     let guest = false;
-    try { guest = window.sessionStorage.getItem(GUEST_KEY) === '1'; } catch { /* private window */ }
+    try { guest = window.sessionStorage.getItem(GUEST_KEY) === '1'; } catch {  }
     goTo(user || guest ? 'ask' : 'login');
   }
 
   function enter(account) {
     setUser(account);
     if (!account) {
-      try { window.sessionStorage.setItem(GUEST_KEY, '1'); } catch { /* private window */ }
+      try { window.sessionStorage.setItem(GUEST_KEY, '1'); } catch {  }
     }
     goTo('ask');
-    // History is per account, so fetch the right one.
     setTimeout(loadHistory, 0);
   }
 
@@ -205,7 +193,6 @@ export default function App() {
     try {
       window.localStorage.setItem(PREFS_KEY, JSON.stringify(next));
     } catch {
-      // Private windows may refuse to save. The settings still apply until the tab closes.
     }
   }
 
@@ -215,7 +202,6 @@ export default function App() {
       if (next.length) window.localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(next));
       else window.localStorage.removeItem(PORTFOLIO_KEY);
     } catch {
-      // As above: it still applies until the tab closes.
     }
   }
 
@@ -224,7 +210,6 @@ export default function App() {
     setSpeakingId(null);
   }
 
-  // Reads an answer with the browser's built-in voice.
   function speak(message) {
     if (speakingId === message.id) return stopSpeaking();
     if (!window.speechSynthesis) return undefined;
@@ -237,8 +222,6 @@ export default function App() {
     return undefined;
   }
 
-  // Sends one message. `label` is what shows in the chat when it differs from what is
-  // sent, for example a live signal whose full description is long.
   async function send(text, { scenario = '', label = '', fresh = false } = {}) {
     const message = text.trim();
     if (!message || busy) return;
@@ -246,10 +229,8 @@ export default function App() {
     goTo('ask');
 
     const previous = fresh ? null : last.current;
-    // Only ticker symbols are sent. Share counts stay in this browser.
     const request = { observation: message, scenario, portfolio: portfolio.map((h) => h.ticker) };
     if (previous?.result.needsClarification) {
-      // This message answers the question TradeWinds just asked.
       request.observation = previous.observation;
       request.scenario = previous.scenario;
       request.clarification = message;
@@ -292,7 +273,6 @@ export default function App() {
     last.current = null;
   }
 
-  // A signal or news event picked from another page starts a new topic in the chat.
   const pick = (item) => send(item.prompt, { scenario: item.scenario || '', label: item.title && item.title !== item.category ? item.title : item.text, fresh: true });
   const analyze = (text) => send(text, { fresh: true });
 

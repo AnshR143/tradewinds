@@ -1,7 +1,5 @@
 'use client';
 
-// A calculator for "how much is at stake". The reader types their own limits and it does
-// the arithmetic. It never picks a number for them.
 import { useState } from 'react';
 import { biggestFall, money } from '@/lib/moves';
 
@@ -15,7 +13,6 @@ export default function Sizer({ ideas }) {
   const idea = priced.find((i) => i.ticker === ticker) || priced[0];
   const price = idea.price.price;
   const series = idea.price.series || [];
-  // With no history to measure, a 10% fall is used and said so.
   const measured = series.length >= 5 ? biggestFall(series) : 0;
   const fall = measured >= 1 ? measured : 10;
   const fallNote = measured >= 1

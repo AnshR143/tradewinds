@@ -1,11 +1,6 @@
-// Places where a disruption spreads far beyond the place itself: big ports, canals,
-// fuel and chip hubs, air cargo hubs and farm regions. Coordinates are approximate.
-// A storm, fire or quake within NEAR_KM of one of these gets flagged.
-
 export const NEAR_KM = 700;
 
 export const CHOKEPOINTS = [
-  // United States
   { name: 'Port of Houston', why: 'the busiest US port for oil and chemicals', lat: 29.73, lon: -95.27 },
   { name: 'Texas and Louisiana refineries', why: 'where about half of US fuel is made', lat: 29.88, lon: -93.94 },
   { name: 'Port of New Orleans', why: 'the main exit for US grain down the Mississippi', lat: 29.95, lon: -90.06 },
@@ -20,14 +15,12 @@ export const CHOKEPOINTS = [
   { name: 'California Central Valley', why: 'where much of US fruit, nuts and vegetables are grown', lat: 36.7, lon: -119.8 },
   { name: 'Permian Basin', why: 'the largest US oil field', lat: 31.9, lon: -102.1 },
 
-  // Americas
   { name: 'Port of Manzanillo', why: 'Mexico\'s largest container port', lat: 19.05, lon: -104.32 },
   { name: 'Port of Lázaro Cárdenas', why: 'a major Mexican port with rail links to the US', lat: 17.96, lon: -102.19 },
   { name: 'Panama Canal', why: 'the shortcut between the Atlantic and Pacific for ships', lat: 9.08, lon: -79.68 },
   { name: 'Brazil coffee region', why: 'where the largest share of the world\'s coffee is grown', lat: -19.9, lon: -44.0 },
   { name: 'Chile copper region', why: 'where the largest share of the world\'s copper is mined', lat: -23.65, lon: -70.4 },
 
-  // Asia
   { name: 'Port of Shanghai', why: 'the busiest container port in the world', lat: 30.63, lon: 122.06 },
   { name: 'Shenzhen and Hong Kong ports', why: 'the export gateway for southern China\'s factories', lat: 22.5, lon: 114.1 },
   { name: 'Taiwan chip factories', why: 'where most of the world\'s advanced computer chips are made', lat: 24.8, lon: 120.97 },
@@ -38,7 +31,6 @@ export const CHOKEPOINTS = [
   { name: 'Strait of Malacca', why: 'the main sea route between Asia and Europe', lat: 2.5, lon: 101.5 },
   { name: 'Sumatra palm oil region', why: 'a leading source of the world\'s palm oil', lat: 0.5, lon: 101.4 },
 
-  // Middle East and Europe
   { name: 'Suez Canal', why: 'the shortcut between Asia and Europe for ships', lat: 30.6, lon: 32.3 },
   { name: 'Strait of Hormuz', why: 'the route for about a fifth of the world\'s oil', lat: 26.57, lon: 56.25 },
   { name: 'Bab el-Mandeb Strait', why: 'the southern gate to the Red Sea and Suez Canal', lat: 12.6, lon: 43.3 },

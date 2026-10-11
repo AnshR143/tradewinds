@@ -1,15 +1,3 @@
-// The impact map: hand-built cause-and-effect chains from a kind of disruption to the
-// companies it touches. The AI picks from this map and explains it. It does not invent
-// the companies or the chains.
-//
-// short:      a two- or three-word name for charts and lists
-// direction:  tailwind = likely helped, headwind = likely hurt
-// confidence: strong = direct effect, likely = one step removed, guess = two or more steps
-// type:       stock, or fund (a basket of many companies)
-//
-// TEAM: check every company and ticker here before the demo. Tickers change when
-// companies merge or get bought.
-
 export const SCENARIOS = [
   {
     id: 'us-hurricane',
@@ -551,8 +539,6 @@ export const SCENARIOS = [
     ],
   },
 
-  // The opposites. Without these, a ceasefire or a falling price got matched to the scenario
-  // for a growing war or a rising price, and companies showed up on the wrong side.
   {
     id: 'conflict-eases',
     short: 'Conflict eases',
@@ -630,7 +616,6 @@ export const SCENARIOS = [
   },
 ];
 
-// Every link by its full id, like "us-hurricane/home-repair".
 export const LINKS = new Map(
   SCENARIOS.flatMap((scenario) => scenario.links.map((link) => [`${scenario.id}/${link.id}`, { ...link, scenario }])),
 );

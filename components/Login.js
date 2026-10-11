@@ -1,6 +1,5 @@
 'use client';
 
-// The login page: log in, create an account, or carry on as a guest.
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 

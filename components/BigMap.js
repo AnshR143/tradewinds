@@ -1,7 +1,5 @@
 'use client';
 
-// The full-screen map: a detailed map of the world with a line from each event happening
-// now to every place it touches. Opened from the Impact map page.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -12,14 +10,10 @@ import MapVoice from '@/components/MapVoice';
 import { bentPath, buildWeb } from '@/lib/web';
 
 const LINE = { tailwind: '#0b7dc0', headwind: '#c2570c', hub: '#737373' };
-// Which way a line bows, so "helped" and "hurt" lines to the same city sit apart.
 const BEND = { tailwind: 0.16, headwind: -0.16, hub: 0.05 };
-// OpenFreeMap: detailed maps built from OpenStreetMap, free and with no key.
 const STYLES = { light: 'https://tiles.openfreemap.org/styles/liberty', dark: 'https://tiles.openfreemap.org/styles/dark' };
-// Stepping through these makes the dashes travel from the event toward the place.
 const DASHES = [[0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0], [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5]];
 const FLOWING = ['web-tailwind', 'web-headwind'];
-// Planes are drawn by the map itself, each icon turned to the plane's heading.
 const PLANE_LAYER = {
   id: 'planes',
   type: 'symbol',
@@ -35,11 +29,9 @@ const PLANE_LAYER = {
   },
   paint: { 'icon-opacity': 0.8 },
 };
-// What can be switched on and off on the map.
 const LAYERS = [['storms', 'Storms'], ['alerts', 'Weather alerts'], ['news', 'News'], ['planes', 'Planes'], ['ships', 'Cargo ships']];
 const KIND_WORD = { ships: 'Ships', planes: 'Planes', airport: 'Airport' };
 
-// A small plane shape pointing north, drawn once and turned to each plane's heading.
 function planeIcon(color) {
   const size = 28;
   const canvas = document.createElement('canvas');
@@ -47,14 +39,12 @@ function planeIcon(color) {
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = color;
   ctx.beginPath();
-  // Nose, right wing, tail, left wing.
   for (const [x, y] of [[14, 2], [16.5, 11], [26, 17], [26, 20], [16.5, 17.5], [16, 23], [19, 25.5], [19, 27], [14, 26], [9, 27], [9, 25.5], [12, 23], [11.5, 17.5], [2, 20], [2, 17], [11.5, 11]]) ctx.lineTo(x, y);
   ctx.closePath();
   ctx.fill();
   return ctx.getImageData(0, 0, size, size);
 }
 
-// A dot on the map. Text from outside feeds goes in as text, never as HTML.
 function dot(className, title, label) {
   const el = document.createElement('div');
   el.className = className;
@@ -86,21 +76,22 @@ function CompanyRows({ companies, showEvent }) {
 
 export default function BigMap({ signals, loading, onPick, onClose }) {
   const mapEl = useRef(null);
-  const gl = useRef(null); // { maplibregl, map, markers, dark }
+  const gl = useRef(null);
   const fitted = useRef(false);
   const [ready, setReady] = useState(false);
   const [newsStocks, setNewsStocks] = useState(null);
   const [board, setBoard] = useState(null);
-  const [selected, setSelected] = useState(null); // { type: 'event' | 'place', id }
+  const [selected, setSelected] = useState(null);
   const [showHubs, setShowHubs] = useState(true);
   const [layers, setLayers] = useState({ storms: true, alerts: true, news: true, planes: false, ships: true });
   const [patterns, setPatterns] = useState(null);
   const [planes, setPlanes] = useState(null);
   const [allPatterns, setAllPatterns] = useState(false);
   const [full, setFull] = useState(true);
-  // The newest onClose, for the listeners that are set up once.
   const close = useRef(onClose);
   close.current = onClose;
+  const flown = useRef('');
+  const voicePin = useRef(null);
 
   useEffect(() => {
     fetch('/api/news-stocks').then((r) => r.json()).then(setNewsStocks).catch(() => {});
@@ -108,12 +99,10 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
     fetch('/api/patterns').then((r) => r.json()).then(setPatterns).catch(() => {});
   }, []);
 
-  // The plane snapshot is big, so it is only fetched once planes are switched on.
   useEffect(() => {
     if (layers.planes && !planes) fetch('/api/planes').then((r) => r.json()).then(setPlanes).catch(() => setPlanes({ planes: [], asOf: null }));
   }, [layers.planes, planes]);
 
-  // Only the kinds of event that are switched on.
   const shown = useMemo(() => signals && {
     ...signals,
     sky: (signals.sky || []).filter((s) => (s.kind === 'weather' ? layers.alerts : layers.storms)),
@@ -126,7 +115,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
     return buildWeb(shown, newsStocks, scores);
   }, [shown, newsStocks, board]);
 
-  // Create the map once.
   useEffect(() => {
     let gone = false;
     let frame = 0;
@@ -142,8 +130,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
         if (gone) return;
         const casing = dark ? '#0a0a0a' : '#ffffff';
         const lit = (yes, no) => ['case', ['get', 'on'], yes, no];
-        // The plane layer goes in first so it sits under the lines. If it cannot be set up,
-        // the rest of the map still works.
         try {
           map.addImage('plane', planeIcon(dark ? '#e5e5e5' : '#27272a'));
           map.addSource('planes', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -180,10 +166,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
     };
   }, []);
 
-  // Full screen, Escape to close, and no scrolling of the page behind.
-  // The browser leaves full screen by itself when it asks to use the camera or the microphone
-  // (hand control, talk to the map). The map stays open and fills the window when that
-  // happens, and the "Full screen" button brings full screen back.
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') close.current(); };
     const onFullscreen = () => {
@@ -203,7 +185,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
     };
   }, []);
 
-  // Planes: thousands of them, so they are drawn by the map itself and not as page elements.
   useEffect(() => {
     if (!ready || !gl.current) return;
     const { map } = gl.current;
@@ -216,7 +197,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
     });
   }, [ready, planes, layers.planes]);
 
-  // Redraw the web whenever the data or the selection changes.
   useEffect(() => {
     if (!ready || !gl.current) return;
     const { maplibregl, map, markers } = gl.current;
@@ -244,7 +224,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
 
     for (const hub of hubs.values()) pin(dot('web-hub', `${hub.name}: ${hub.why}`), hub.at);
 
-    // Cargo ships: one label per choke point, colored by how far traffic is from a typical year.
     if (layers.ships) {
       for (const point of patterns?.ships.points || []) {
         const pct = point.typical >= 5 ? point.typicalPct : 0;
@@ -255,7 +234,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
         if (picked) reach.push([point.lat, point.lon]);
       }
     }
-    // Airports with a delay show with the planes.
     if (layers.planes) {
       for (const airport of patterns?.airports || []) {
         if (airport.lat === null) continue;
@@ -283,9 +261,10 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
       if (!selected || (selected.type === 'event' && selected.id === event.id)) reach.push([event.lat, event.lon]);
     }
 
-    // Frame everything once, then frame each thing the reader picks. The left padding
-    // keeps the panel from covering what they picked.
-    if (reach.length && (selected || !fitted.current)) {
+    const flew = selected && flown.current === `${selected.type}:${selected.id}`;
+    if (!selected) flown.current = '';
+    if (flew) fitted.current = true;
+    else if (reach.length && (selected || !fitted.current)) {
       const lats = reach.map((p) => p[0]);
       const lons = reach.map((p) => p[1]);
       const wide = window.innerWidth > 900;
@@ -304,7 +283,6 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
   const airport = selected?.type === 'airport' ? patterns?.airports.find((a) => a.id === selected.id) : null;
   const linked = web.events.filter((e) => e.placeCount > 0);
   const other = web.events.filter((e) => e.placeCount === 0);
-  // Patterns for the layers that are switched on.
   const findings = (patterns?.findings || []).filter((f) => (f.kind === 'ships' ? layers.ships : layers.planes || f.kind === 'ships'));
   const findingFor = (kind, ref) => patterns?.findings.find((f) => f.kind === kind && f.ref === ref);
   const planesNear = event && patterns?.planes.nearStorms.find((c) => c.id === event.id);
@@ -317,13 +295,28 @@ export default function BigMap({ signals, loading, onPick, onClose }) {
     else if (finding.kind === 'airport') setSelected({ type: 'airport', id: finding.ref });
     else setSelected({ type: 'event', id: finding.ref });
   }
-  // The voice asks to zoom to something it is talking about. Only things that are really on
-  // this map are opened, and their layer is switched on so they can be seen.
   function openFromVoice(item) {
-    if (item.type === 'ship' && patterns?.ships.points.some((p) => p.id === item.id)) setLayers((now) => ({ ...now, ships: true }));
-    else if (item.type === 'airport' && patterns?.airports.some((a) => a.id === item.id)) setLayers((now) => ({ ...now, planes: true }));
-    else if (item.type !== 'event' || !web.events.some((e) => e.id === item.id)) return;
-    setSelected({ type: item.type, id: item.id });
+    const map = gl.current?.map;
+    const here = typeof item.lat === 'number' && typeof item.lon === 'number';
+    let known = false;
+    if (item.type === 'ship' && patterns?.ships.points.some((p) => p.id === item.id)) {
+      setLayers((now) => ({ ...now, ships: true }));
+      known = true;
+    } else if (item.type === 'airport' && patterns?.airports.some((a) => a.id === item.id)) {
+      setLayers((now) => ({ ...now, planes: true }));
+      known = true;
+    } else if (item.type === 'event' && web.events.some((e) => e.id === item.id)) {
+      known = true;
+    }
+    if (known) {
+      flown.current = here ? `${item.type}:${item.id}` : '';
+      setSelected({ type: item.type, id: item.id });
+    }
+    voicePin.current?.remove();
+    voicePin.current = null;
+    if (!map || !here) return;
+    if (!known) voicePin.current = new gl.current.maplibregl.Marker({ element: dot('web-event picked', '', item.name || ''), anchor: 'left', offset: [-9, 0] }).setLngLat([item.lon, item.lat]).addTo(map);
+    map.flyTo({ center: [item.lon, item.lat], zoom: item.type === 'ship' || item.type === 'airport' ? 6 : 5.5, offset: [window.innerWidth > 900 ? 190 : 0, 0], duration: 1800 });
   }
   const ask = (finding) => { onClose(); onPick({ prompt: finding.prompt, scenario: finding.scenario || '', title: finding.title }); };
   const back = <button className="chip" onClick={() => setSelected(null)}>Back to the list</button>;
